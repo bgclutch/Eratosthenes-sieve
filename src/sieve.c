@@ -1,0 +1,106 @@
+#include "sieve.h"
+#include <assert.h>
+#include <limits.h>
+#include <math.h>
+#include <stdlib.h>
+
+
+void fill_sieve(sieve *sv) {
+    int k = 6;
+    sv->mod1[0] = sv->mod1[0] | (1 << 0);
+
+    for (size_t i = 0; i < (sv->n * 8); ++i) {
+        if (!(sv->mod1[i / CHAR_BIT] >> (i % CHAR_BIT) & 1)) {
+        size_t num_mod1 = 6 * i + 1;
+            for (size_t p = num_mod1 * num_mod1; p < (k * sv->n * 8 + 1); ) {
+                if (p % k == 1) {
+                    sv->mod1[p / k / CHAR_BIT] = sv->mod1[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+                    p += 4 * num_mod1;
+                }
+                else {
+                    sv->mod5[p / k / CHAR_BIT] = sv->mod5[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+                    p += 2 * num_mod1;
+                }
+            }
+        }
+    }
+
+    for (size_t i = 0; i < (sv->n * 8); ++i) {
+        if (!(sv->mod5[i / CHAR_BIT] >> (i % CHAR_BIT) & 1)) {
+        size_t num_mod5 = 6 * i + 5;
+            for (size_t p = num_mod5 * num_mod5; p < (k * sv->n * 8 + 5); ) {
+                if (p % k == 1) {
+                    sv->mod1[p / k / CHAR_BIT] = sv->mod1[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+                    p += 2 * num_mod5;
+                }
+                else {
+                    sv->mod5[p / k / CHAR_BIT] = sv->mod5[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+                    p += 4 * num_mod5;
+                }
+            }
+        }
+    }
+}
+
+int is_prime(sieve *sv, unsigned n) {
+    int res = 0, k = 6;
+
+    if (n == 2 || n == 3) {
+        res = 1;
+        return res;
+    }
+
+    if ((n % k) == 1) {
+        res = ((sv->mod1[(n / k) / CHAR_BIT] >> (n / k) % CHAR_BIT) & 1) == 0;
+    }
+    else if ((n % k) == 5) {
+        res = ((sv->mod5[(n / k) / CHAR_BIT] >> (n / k) % CHAR_BIT) & 1) == 0;
+    }
+    else
+        assert(0);
+
+    return res;
+}
+
+int sieve_bound(int num) {
+    double double_num, double_res;
+    if (num <= 20)
+        return 100;
+    double_num = num;
+    double_res = double_num * (log(double_num) + log(log(double_num)));
+
+    return (int) ceil(double_res);
+}
+
+size_t find_prime(sieve *s, int N) {
+    int counter = 0;
+    size_t curnum;
+    if (N == 1)
+        return 2;
+    if (N == 2)
+        return 3;
+
+    counter = 2;
+    curnum = 5;
+
+    while (1) {
+        if (is_prime(s, curnum)) {
+            ++counter;
+            if (counter == N)
+                break;
+        }
+        curnum += 2;
+
+        if (is_prime(s, curnum)) {
+            ++counter;
+            if (counter == N)
+                break;
+        }
+        curnum += 4;
+
+        if (counter > s->n * CHAR_BIT)
+            assert(0);
+    }
+
+    return curnum;
+}
