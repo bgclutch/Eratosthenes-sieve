@@ -17,13 +17,13 @@ void fill_sieve(sieve *sv) {
         if (!(sv->mod1[i / CHAR_BIT] >> (i % CHAR_BIT) & 1)) {
         size_t num_mod1 = k * i + 1;
             for (size_t p = num_mod1 * num_mod1; p < (k * sv->n * CHAR_BIT + 1); ) {
-                if ((p % k) == 1) {
+                if ((p % k) == 1) {                                                                             // check is p belongs to mod1 array
                     sv->mod1[(p / k) / CHAR_BIT] = sv->mod1[(p / k) / CHAR_BIT] | (1 << ((p / k) % CHAR_BIT));
-                    p += 4 * num_mod1;
+                    p += 4 * num_mod1;                                                                          // step to next element of mod5 array
                 }
-                else {
+                else {                                                                                          // else p belongs to mod5 array
                     sv->mod5[(p / k) / CHAR_BIT] = sv->mod5[(p / k) / CHAR_BIT] | (1 << ((p / k) % CHAR_BIT));
-                    p += 2 * num_mod1;
+                    p += 2 * num_mod1;                                                                          // step to next element of mod1 array
                 }
             }
         }

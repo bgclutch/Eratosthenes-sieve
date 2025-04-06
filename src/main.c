@@ -25,10 +25,16 @@ int main() {
     }
 
     s = (sieve*) calloc(sizeof(sieve), 1);
-    s->n = ((sieve_bound(n) / CHAR_BIT) / 6) + 1;
 
     if (!s){
         fprintf(stderr, "sieve struct wasn't allocated\n");
+        return EXIT_FAILURE;
+    }
+
+    s->n = ((sieve_bound(n) / CHAR_BIT) / 6) + 1;
+
+    if (s->n < 3) {
+        fprintf(stderr, "array's size in sieve struct less than should be\n");
         return EXIT_FAILURE;
     }
 

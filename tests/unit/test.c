@@ -11,10 +11,33 @@ int main() {
     sieve *s;
 
     s = (sieve*) calloc(sizeof(sieve), 1);
-    s->n = sieve_bound(test_data[9]) / CHAR_BIT / 6 + 1;
+    if (!s) {
+        fprintf(stderr, "sieve struct wasn't allocated\n");
+        return EXIT_FAILURE;
+    }
+    s->n =((sieve_bound(test_data[9]) / CHAR_BIT) / 6) + 1;
+
+    if (s->n < 3) {
+        fprintf(stderr, "array's size in sieve struct less than should be\n");
+        return EXIT_FAILURE;
+    }
 
     s->mod1 = (unsigned char *) calloc(s->n, sizeof(char));
+
+    if (!s->mod1){
+        fprintf(stderr, "in sieve struct array for n mod 1 wasn't allocated\n");
+        free(s);
+        return EXIT_FAILURE;
+    }
+
     s->mod5 = (unsigned char *) calloc(s->n, sizeof(char));
+
+    if (!s->mod5){
+        fprintf(stderr, "in sieve struct array for n mod 5 wasn't allocated\n");
+        free(s->mod1);
+        free(s);
+        return EXIT_FAILURE;
+    }
 
     clock_t begin = clock();
     fill_sieve(s);
