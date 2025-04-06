@@ -4,37 +4,41 @@
 #include <math.h>
 #include <stdlib.h>
 
-
 void fill_sieve(sieve *sv) {
+    assert(sv);
+    assert(sv->n > 2);
+    assert(sv->mod1);
+    assert(sv->mod5);
+
     int k = 6;
     sv->mod1[0] = sv->mod1[0] | (1 << 0);
 
-    for (size_t i = 0; i < (sv->n * 8); ++i) {
+    for (size_t i = 0; i < (sv->n * CHAR_BIT); ++i) {
         if (!(sv->mod1[i / CHAR_BIT] >> (i % CHAR_BIT) & 1)) {
-        size_t num_mod1 = 6 * i + 1;
-            for (size_t p = num_mod1 * num_mod1; p < (k * sv->n * 8 + 1); ) {
-                if (p % k == 1) {
-                    sv->mod1[p / k / CHAR_BIT] = sv->mod1[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+        size_t num_mod1 = k * i + 1;
+            for (size_t p = num_mod1 * num_mod1; p < (k * sv->n * CHAR_BIT + 1); ) {
+                if ((p % k) == 1) {
+                    sv->mod1[(p / k) / CHAR_BIT] = sv->mod1[(p / k) / CHAR_BIT] | (1 << ((p / k) % CHAR_BIT));
                     p += 4 * num_mod1;
                 }
                 else {
-                    sv->mod5[p / k / CHAR_BIT] = sv->mod5[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+                    sv->mod5[(p / k) / CHAR_BIT] = sv->mod5[(p / k) / CHAR_BIT] | (1 << ((p / k) % CHAR_BIT));
                     p += 2 * num_mod1;
                 }
             }
         }
     }
 
-    for (size_t i = 0; i < (sv->n * 8); ++i) {
+    for (size_t i = 0; i < (sv->n * CHAR_BIT); ++i) {
         if (!(sv->mod5[i / CHAR_BIT] >> (i % CHAR_BIT) & 1)) {
-        size_t num_mod5 = 6 * i + 5;
-            for (size_t p = num_mod5 * num_mod5; p < (k * sv->n * 8 + 5); ) {
-                if (p % k == 1) {
-                    sv->mod1[p / k / CHAR_BIT] = sv->mod1[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+        size_t num_mod5 = k * i + 5;
+            for (size_t p = num_mod5 * num_mod5; p < (k * sv->n * CHAR_BIT + 5); ) {
+                if ((p % k) == 1) {
+                    sv->mod1[(p / k) / CHAR_BIT] = sv->mod1[(p / k) / CHAR_BIT] | (1 << ((p / k) % CHAR_BIT));
                     p += 2 * num_mod5;
                 }
                 else {
-                    sv->mod5[p / k / CHAR_BIT] = sv->mod5[p / k / CHAR_BIT] | (1 << (p / k % CHAR_BIT));
+                    sv->mod5[(p / k) / CHAR_BIT] = sv->mod5[(p / k) / CHAR_BIT] | (1 << ((p / k) % CHAR_BIT));
                     p += 4 * num_mod5;
                 }
             }
@@ -43,6 +47,12 @@ void fill_sieve(sieve *sv) {
 }
 
 int is_prime(sieve *sv, unsigned n) {
+    assert(sv);
+    assert(sv->n > 2);
+    assert(sv->mod1);
+    assert(sv->mod5);
+    assert(n > 0);
+
     int res = 0, k = 6;
 
     if (n == 2 || n == 3) {
@@ -51,18 +61,21 @@ int is_prime(sieve *sv, unsigned n) {
     }
 
     if ((n % k) == 1) {
-        res = ((sv->mod1[(n / k) / CHAR_BIT] >> (n / k) % CHAR_BIT) & 1) == 0;
+        res = ((sv->mod1[(n / k) / CHAR_BIT] >> ((n / k) % CHAR_BIT)) & 1) == 0;
     }
     else if ((n % k) == 5) {
-        res = ((sv->mod5[(n / k) / CHAR_BIT] >> (n / k) % CHAR_BIT) & 1) == 0;
+        res = ((sv->mod5[(n / k) / CHAR_BIT] >>((n / k) % CHAR_BIT)) & 1) == 0;
     }
-    else
-        assert(0);
+    else {
+        assert(0 && "n mod 6 != 1 or n mod 6 != 5");
+    }
 
     return res;
 }
 
 int sieve_bound(int num) {
+    assert(num > 0);
+
     double double_num, double_res;
     if (num <= 20)
         return 100;
@@ -73,6 +86,11 @@ int sieve_bound(int num) {
 }
 
 size_t find_prime(sieve *s, int N) {
+    assert(s);
+    assert(N > 0);
+    assert(s->mod1);
+    assert(s->mod5);
+
     int counter = 0;
     size_t curnum;
     if (N == 1)
@@ -98,8 +116,8 @@ size_t find_prime(sieve *s, int N) {
         }
         curnum += 4;
 
-        if (counter > s->n * CHAR_BIT)
-            assert(0);
+        if (counter > (s->n * CHAR_BIT))
+            assert(0 && "counter > sieve size");
     }
 
     return curnum;

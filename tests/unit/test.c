@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <time.h>
 
 int main() {
     const int TESTCOUNT = 10;
@@ -15,6 +16,7 @@ int main() {
     s->mod1 = (unsigned char *) calloc(s->n, sizeof(char));
     s->mod5 = (unsigned char *) calloc(s->n, sizeof(char));
 
+    clock_t begin = clock();
     fill_sieve(s);
 
     for (int i = 0; i < TESTCOUNT; ++i) {
@@ -25,7 +27,11 @@ int main() {
             return EXIT_FAILURE;
         }
     }
-    fprintf(stderr, "ALL TEST PASSED\n");
+    clock_t end = clock();
+    double time_spent = (double) (end - begin) / CLOCKS_PER_SEC;
+
+    printf("ALL TEST PASSED\n"
+           "Execution time: %g seconds\n", time_spent);
 
     free(s->mod1);
     free(s->mod5);
